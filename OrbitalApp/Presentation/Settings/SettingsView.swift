@@ -8,28 +8,21 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section {
-                    HStack(spacing: 16) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(Color.orbitalPrimary)
-                        VStack(alignment: .leading) {
-                            Text(viewModel.currentUser?.displayName ?? "Guest")
-                                .font(.orbitalHeadline)
-                            Text(viewModel.currentUser?.email ?? "")
-                                .font(.orbitalCaption)
-                                .foregroundStyle(Color.orbitalTextSecondary)
-                        }
-                    }
-                    .padding(.vertical, 6)
+                    profileRow
                 }
+                .listRowBackground(Color.orbitalSurface)
 
-                Section("Coming soon") {
-                    // Extension points: each of these is added by introducing a new Domain protocol
-                    // + Data implementation + ViewModel, the same pattern as Auth/Map/Call.
+                Section {
                     ComingSoonRow(systemImage: "bell.badge.fill", title: "Push notifications")
                     ComingSoonRow(systemImage: "chart.bar.fill", title: "Analytics")
                     ComingSoonRow(systemImage: "icloud.fill", title: "Real backend (Firebase/Auth0)")
+                } header: {
+                    // Extension points: each of these is added by introducing a new Domain protocol
+                    // + Data implementation + ViewModel, the same pattern as Auth/Map/Call.
+                    SectionHeader(title: "Coming soon")
                 }
+                .textCase(nil)
+                .listRowBackground(Color.orbitalSurface)
 
                 Section {
                     PrimaryButton(title: "Log Out", isLoading: isLoggingOut) {
@@ -40,12 +33,31 @@ struct SettingsView: View {
                         }
                     }
                     .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
                 }
+                .listRowBackground(Color.clear)
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Color.orbitalBackground)
             .navigationTitle("Profile")
             .errorAlert($viewModel.presentedError)
         }
+    }
+
+    private var profileRow: some View {
+        HStack(spacing: Spacing.md) {
+            Avatar(name: viewModel.currentUser?.displayName ?? "Guest", size: 48)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(viewModel.currentUser?.displayName ?? "Guest")
+                    .font(.orbitalHeadline)
+                    .foregroundStyle(Color.orbitalTextPrimary)
+                Text(viewModel.currentUser?.email ?? "")
+                    .font(.orbitalSubheadline)
+                    .foregroundStyle(Color.orbitalTextSecondary)
+            }
+        }
+        .padding(.vertical, Spacing.xs)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -60,11 +72,13 @@ private struct ComingSoonRow: View {
                 .frame(width: 28)
             Text(title)
                 .font(.orbitalBody)
+                .foregroundStyle(Color.orbitalTextPrimary)
             Spacer()
             Text("Soon")
                 .font(.orbitalCaption)
-                .foregroundStyle(Color.orbitalTextSecondary)
+                .foregroundStyle(Color.orbitalTextTertiary)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

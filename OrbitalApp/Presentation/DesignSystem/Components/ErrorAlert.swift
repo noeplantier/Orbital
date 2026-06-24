@@ -13,7 +13,9 @@ struct IdentifiableError: Identifiable {
 
 extension View {
     /// Presents a blocking alert for errors that need explicit acknowledgement (e.g. failed login).
-    /// For non-blocking, transient notices, prefer `.snackbar(...)` instead.
+    /// For non-blocking, transient notices, prefer `.snackbar(...)` instead. Deliberately left as a
+    /// native `.alert` rather than a custom-themed sheet — it already follows Dark Mode, Dynamic
+    /// Type, and VoiceOver correctly for free, which a hand-rolled alert would have to re-earn.
     func errorAlert(_ error: Binding<IdentifiableError?>) -> some View {
         alert(
             "Something went wrong",

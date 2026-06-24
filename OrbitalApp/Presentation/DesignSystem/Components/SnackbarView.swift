@@ -27,20 +27,19 @@ struct SnackbarView: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: style.systemImage)
             Text(message)
-                .font(.orbitalCaption)
+                .font(.orbitalSubheadline)
                 .multilineTextAlignment(.leading)
             Spacer(minLength: 0)
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(style.color)
-        )
+        .padding(Spacing.md)
+        .background(style.color, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
         .foregroundStyle(.white)
+        .elevation(.raised)
         .padding(.horizontal)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -64,7 +63,7 @@ private struct SnackbarModifier: ViewModifier {
         content.overlay(alignment: .bottom) {
             if let message {
                 SnackbarView(message: message.text, style: message.style)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, Spacing.xl)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .task(id: message.id) {
                         try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
@@ -72,7 +71,7 @@ private struct SnackbarModifier: ViewModifier {
                     }
             }
         }
-        .animation(.spring(duration: 0.3), value: message?.id)
+        .animation(Motion.spring, value: message?.id)
     }
 }
 

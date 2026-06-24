@@ -13,8 +13,9 @@ struct OrbitalApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(environment: environment)
-                .environmentObject(session)
+            // Passed explicitly rather than via `.environmentObject` so every screen's dependencies
+            // are visible in its initializer — no hidden environment lookups to trace through.
+            RootView(environment: environment, session: session)
         }
     }
 }

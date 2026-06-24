@@ -12,6 +12,7 @@ struct MapScreenView: View {
                 ForEach(viewModel.places) { place in
                     Annotation(place.title, coordinate: place.coordinate.clLocationCoordinate) {
                         PlaceMarkerView(category: place.category)
+                            .accessibilityLabel(place.title)
                     }
                 }
 
@@ -30,15 +31,18 @@ struct MapScreenView: View {
                 MapScaleView()
             }
             .overlay(alignment: .bottomTrailing) {
-                VStack(spacing: 12) {
-                    MapControlButton(systemImage: "location.fill") {
+                VStack(spacing: Spacing.md) {
+                    IconButton(systemImage: "location.fill", accessibilityLabel: "Center on my location") {
                         viewModel.recenterOnUser()
                     }
-                    MapControlButton(systemImage: viewModel.is3DEnabled ? "view.2d" : "view.3d") {
+                    IconButton(
+                        systemImage: viewModel.is3DEnabled ? "view.2d" : "view.3d",
+                        accessibilityLabel: viewModel.is3DEnabled ? "Switch to 2D view" : "Switch to 3D view"
+                    ) {
                         viewModel.toggle3DPerspective()
                     }
                 }
-                .padding(20)
+                .padding(Spacing.xl)
             }
             .navigationTitle("Map")
             .task { viewModel.onAppear() }
@@ -54,9 +58,9 @@ private struct PlaceMarkerView: View {
         Image(systemName: systemImage)
             .font(.system(size: 14, weight: .bold))
             .foregroundStyle(.white)
-            .padding(8)
-            .background(Circle().fill(color))
-            .shadow(radius: 2)
+            .padding(Spacing.sm)
+            .background(color, in: Circle())
+            .elevation(.soft)
     }
 
     private var systemImage: String {
@@ -72,22 +76,6 @@ private struct PlaceMarkerView: View {
         case .office: return .orbitalPrimary
         case .partner: return .orbitalSecondary
         case .pointOfInterest: return .orbitalWarning
-        }
-    }
-}
-
-private struct MapControlButton: View {
-    let systemImage: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color.orbitalTextPrimary)
-                .frame(width: 44, height: 44)
-                .background(Circle().fill(Color.orbitalSurface))
-                .shadow(radius: 3)
         }
     }
 }

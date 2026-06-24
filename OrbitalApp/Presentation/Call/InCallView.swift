@@ -1,5 +1,9 @@
 import SwiftUI
 
+/// Deliberately stays a fixed black/white "immersive" surface regardless of the system's light/dark
+/// setting — the same choice every real calling app (FaceTime, Zoom, Meet) makes, since video tiles
+/// need a neutral dark surround to read correctly. Everything here is hand-tuned white-on-black on
+/// purpose; it does not use the dynamic `orbital*` color tokens the rest of the app uses.
 struct InCallView: View {
     @ObservedObject var viewModel: CallViewModel
 
@@ -39,7 +43,7 @@ struct InCallView: View {
                 waitingForOthersView
             }
         } else if case .connecting = viewModel.callState {
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.md) {
                 ProgressView().tint(.white)
                 Text("Connecting…").foregroundStyle(.white)
             }
@@ -47,13 +51,14 @@ struct InCallView: View {
     }
 
     private var waitingForOthersView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.sm) {
             Image(systemName: "person.wave.2.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.white.opacity(0.7))
             Text("Waiting for others to join…")
                 .foregroundStyle(.white.opacity(0.7))
         }
+        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
@@ -61,8 +66,11 @@ struct InCallView: View {
         if case .connected(_, let participants) = viewModel.callState, let local = participants.first(where: \.isLocal) {
             VideoPlaceholderView(participant: local, isProminent: false)
                 .frame(width: 100, height: 140)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(.white.opacity(0.3), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                        .stroke(.white.opacity(0.3), lineWidth: 1)
+                )
         }
     }
 
@@ -71,17 +79,18 @@ struct InCallView: View {
         if case .connected(let room, _) = viewModel.callState {
             Text(room.name)
                 .font(.orbitalCaption)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
                 .background(Capsule().fill(.black.opacity(0.4)))
                 .foregroundStyle(.white)
         }
     }
 
     private var controlBar: some View {
-        HStack(spacing: 28) {
+        HStack(spacing: Spacing.xxl) {
             CallControlButton(
                 systemImage: isMicrophoneMuted ? "mic.slash.fill" : "mic.fill",
+                accessibilityLabel: isMicrophoneMuted ? "Unmute microphone" : "Mute microphone",
                 isActive: !isMicrophoneMuted
             ) {
                 Task { await viewModel.toggleMicrophone() }
@@ -89,16 +98,17 @@ struct InCallView: View {
 
             CallControlButton(
                 systemImage: isCameraEnabled ? "video.fill" : "video.slash.fill",
+                accessibilityLabel: isCameraEnabled ? "Turn off camera" : "Turn on camera",
                 isActive: isCameraEnabled
             ) {
                 Task { await viewModel.toggleCamera() }
             }
 
-            CallControlButton(systemImage: "phone.down.fill", tint: .orbitalDanger) {
+            CallControlButton(systemImage: "phone.down.fill", accessibilityLabel: "End call", tint: .orbitalDanger) {
                 Task { await viewModel.leaveCall() }
             }
         }
-        .padding(.vertical, 24)
+        .padding(.vertical, Spacing.xl)
     }
 
     private var isMicrophoneMuted: Bool {
@@ -124,7 +134,7 @@ private struct VideoPlaceholderView: View {
             LinearGradient(colors: [Color.orbitalPrimary.opacity(0.6), .black], startPoint: .top, endPoint: .bottom)
 
             if participant.isCameraEnabled {
-                VStack(spacing: 8) {
+                VStack(spacing: Spacing.sm) {
                     Image(systemName: "person.crop.circle.fill")
                         .font(.system(size: isProminent ? 70 : 36))
                         .foregroundStyle(.white.opacity(0.9))
@@ -155,11 +165,21 @@ private struct VideoPlaceholderView: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityDescription)
+    }
+
+    private var accessibilityDescription: String {
+        var parts = [participant.isLocal ? "You" : participant.displayName]
+        parts.append(participant.isCameraEnabled ? "camera on" : "camera off")
+        if participant.isMicrophoneMuted { parts.append("muted") }
+        return parts.joined(separator: ", ")
     }
 }
 
 private struct CallControlButton: View {
     let systemImage: String
+    let accessibilityLabel: String
     var isActive: Bool = true
     var tint: Color = .white
     let action: () -> Void
@@ -170,8 +190,10 @@ private struct CallControlButton: View {
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(backgroundFill == .white ? Color.black : Color.white)
                 .frame(width: 60, height: 60)
-                .background(Circle().fill(backgroundFill))
+                .background(backgroundFill, in: Circle())
         }
+        .buttonStyle(PressableScaleStyle())
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private var backgroundFill: Color {
