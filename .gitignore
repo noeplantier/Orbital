@@ -1,0 +1,19 @@
+# Xcode
+build/
+DerivedData/
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+
+# XcodeGen output is regenerated from project.yml, don't commit it
+*.xcworkspace
+
+# macOS
+.DS_Store
+
+# SwiftPM
+.build/
+Packages/
+Package.resolved
