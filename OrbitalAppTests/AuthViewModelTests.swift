@@ -38,6 +38,22 @@ final class AuthViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel.presentedError)
     }
 
+    func test_continueWithGoogle_signsIntoSessionWithoutRequiringFormFields() async {
+        let repository = MockAuthRepository()
+        let session = SessionStore(authRepository: repository)
+        let viewModel = AuthViewModel(
+            authRepository: repository,
+            loginUseCase: LoginUseCase(authRepository: repository),
+            session: session
+        )
+
+        await viewModel.continueWithGoogle()
+
+        XCTAssertNotNil(session.currentUser)
+        XCTAssertNil(viewModel.presentedError)
+        XCTAssertFalse(viewModel.isGoogleSignInLoading)
+    }
+
     func test_canSubmit_isFalseUntilBothFieldsAreFilled() {
         let repository = MockAuthRepository()
         let session = SessionStore(authRepository: repository)

@@ -12,11 +12,15 @@ actor MockAuthRepository: AuthRepository {
     }
 
     private var accountsByEmail: [String: StoredAccount]
+    /// Not in `accountsByEmail` on purpose: a Google-sign-in identity has no local password to
+    /// check, so it doesn't belong in a dictionary keyed for password verification.
+    private let googleUser: User
     private var signedInUser: User?
 
     init() {
         let demoUser = User(id: UUID().uuidString, email: "demo@orbital.app", displayName: "Demo User")
         accountsByEmail = [demoUser.email: StoredAccount(user: demoUser, password: "password123")]
+        googleUser = User(id: UUID().uuidString, email: "plantiernoe50@gmail.com", displayName: "Noé Plantier")
         signedInUser = nil
     }
 
@@ -44,6 +48,15 @@ actor MockAuthRepository: AuthRepository {
         accountsByEmail[normalizedEmail] = StoredAccount(user: newUser, password: password)
         signedInUser = newUser
         return newUser
+    }
+
+    func signInWithGoogle() async throws -> User {
+        try await simulateNetworkLatency()
+        // Real implementation: call `GIDSignIn.sharedInstance.signIn(...)`, take the resulting
+        // `idToken`, and send it to your backend to mint a session — nothing else in the app
+        // changes, since every caller only ever sees the `AuthRepository` protocol.
+        signedInUser = googleUser
+        return googleUser
     }
 
     func logout() async {

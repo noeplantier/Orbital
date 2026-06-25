@@ -13,6 +13,18 @@ struct AuthView: View {
             VStack(spacing: Spacing.xl) {
                 header
 
+                SecondaryButton(
+                    title: "Continue with Google",
+                    systemImage: "g.circle.fill",
+                    isFullWidth: true,
+                    isLoading: viewModel.isGoogleSignInLoading,
+                    isEnabled: viewModel.canUseGoogleSignIn
+                ) {
+                    Task { await viewModel.continueWithGoogle() }
+                }
+
+                orDivider
+
                 VStack(spacing: Spacing.md) {
                     TextField("Email", text: $viewModel.email)
                         .textContentType(.emailAddress)
@@ -77,11 +89,26 @@ struct AuthView: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var orDivider: some View {
+        HStack(spacing: Spacing.sm) {
+            Rectangle().fill(Color.orbitalSeparator).frame(height: 1)
+            Text("or")
+                .font(.orbitalCaption)
+                .foregroundStyle(Color.orbitalTextTertiary)
+            Rectangle().fill(Color.orbitalSeparator).frame(height: 1)
+        }
+        .accessibilityHidden(true)
+    }
+
     private var demoHint: some View {
-        Text("Demo account: demo@orbital.app / password123")
-            .font(.orbitalCaption)
-            .foregroundStyle(Color.orbitalTextTertiary)
-            .padding(.top, Spacing.xs)
+        VStack(spacing: 2) {
+            Text("Demo account: demo@orbital.app / password123")
+            Text("\"Continue with Google\" signs in as a mocked identity — no real OAuth wired up yet")
+        }
+        .font(.orbitalCaption)
+        .foregroundStyle(Color.orbitalTextTertiary)
+        .multilineTextAlignment(.center)
+        .padding(.top, Spacing.xs)
     }
 }
 

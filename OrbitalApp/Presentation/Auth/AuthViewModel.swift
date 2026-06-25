@@ -25,6 +25,9 @@ final class AuthViewModel: ObservableObject {
     @Published var password: String = ""
     @Published var mode: AuthMode = .login
     @Published var isLoading = false
+    /// Separate from `isLoading` on purpose — the email form and the Google button are
+    /// independent actions, and conflating them would make one show a spinner for the other's request.
+    @Published var isGoogleSignInLoading = false
     @Published var presentedError: IdentifiableError?
 
     private let authRepository: AuthRepository
@@ -38,7 +41,11 @@ final class AuthViewModel: ObservableObject {
     }
 
     var canSubmit: Bool {
-        !email.isEmpty && !password.isEmpty && !isLoading
+        !email.isEmpty && !password.isEmpty && !isLoading && !isGoogleSignInLoading
+    }
+
+    var canUseGoogleSignIn: Bool {
+        !isLoading && !isGoogleSignInLoading
     }
 
     func toggleMode() {
@@ -60,6 +67,18 @@ final class AuthViewModel: ObservableObject {
             case .signUp:
                 user = try await authRepository.signUp(email: email, password: password)
             }
+            session.handleSignedIn(user)
+        } catch {
+            presentedError = IdentifiableError(underlyingError: error)
+        }
+    }
+
+    func continueWithGoogle() async {
+        guard canUseGoogleSignIn else { return }
+        isGoogleSignInLoading = true
+        defer { isGoogleSignInLoading = false }
+        do {
+            let user = try await authRepository.signInWithGoogle()
             session.handleSignedIn(user)
         } catch {
             presentedError = IdentifiableError(underlyingError: error)
