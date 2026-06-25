@@ -1,3 +1,4 @@
+import FirebaseCore
 import SwiftUI
 
 @main
@@ -6,6 +7,13 @@ struct MetaCityApp: App {
     private let environment: AppEnvironment
 
     init() {
+        // Guarded rather than unconditional: `FirebaseApp.configure()` crashes hard if
+        // GoogleService-Info.plist isn't in the bundle, and that file is gitignored (see
+        // .gitignore) since this repo is public. Anyone without it still gets a fully working
+        // app on the in-memory mocks — see `AppEnvironment.defaultAuthRepository()`.
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        }
         let environment = AppEnvironment()
         self.environment = environment
         _session = StateObject(wrappedValue: SessionStore(authRepository: environment.authRepository))

@@ -1,8 +1,9 @@
+import FirebaseCore
 import Foundation
 
 /// Simple, explicit dependency container — a lightweight alternative to a full DI framework like
 /// Resolver/Swinject. Every dependency is exposed only as its Domain protocol type, so swapping
-/// `MockAuthRepository` for `FirebaseAuthRepository` later is a one-line change here and nowhere else.
+/// `MockAuthRepository` for `FirebaseAuthRepository` was a one-line change here and nowhere else.
 @MainActor
 final class AppEnvironment {
     let authRepository: AuthRepository
@@ -11,7 +12,7 @@ final class AppEnvironment {
     let locationProvider: UserLocationProvider
 
     init(
-        authRepository: AuthRepository = MockAuthRepository(),
+        authRepository: AuthRepository = AppEnvironment.defaultAuthRepository(),
         mapRepository: MapRepository = MockMapRepository(),
         callService: CallService = MockCallService(),
         locationProvider: UserLocationProvider = CoreLocationProvider()
@@ -20,6 +21,14 @@ final class AppEnvironment {
         self.mapRepository = mapRepository
         self.callService = callService
         self.locationProvider = locationProvider
+    }
+
+    /// Picks the real Firebase-backed repository when `FirebaseApp.configure()` has already run
+    /// (i.e. a `GoogleService-Info.plist` was present at launch — see `MetaCityApp.init`),
+    /// otherwise falls back to the in-memory mock. This is what keeps "clone and run" working for
+    /// anyone without that file, instead of crashing on launch.
+    private nonisolated static func defaultAuthRepository() -> AuthRepository {
+        FirebaseApp.app() != nil ? FirebaseAuthRepository() : MockAuthRepository()
     }
 
     // MARK: - Feature ViewModel factories
