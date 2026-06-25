@@ -10,6 +10,9 @@ final class AppEnvironment {
     let mapRepository: MapRepository
     let callService: CallService
     let locationProvider: UserLocationProvider
+    /// Lets the UI show/hide things that only make sense on the mock (the demo-account hint) —
+    /// without leaking *which* backend is active any deeper than that one boolean.
+    let isUsingMockAuth: Bool
 
     init(
         authRepository: AuthRepository = AppEnvironment.defaultAuthRepository(),
@@ -21,6 +24,7 @@ final class AppEnvironment {
         self.mapRepository = mapRepository
         self.callService = callService
         self.locationProvider = locationProvider
+        self.isUsingMockAuth = FirebaseApp.app() == nil
     }
 
     /// Picks the real Firebase-backed repository when `FirebaseApp.configure()` has already run
@@ -39,7 +43,8 @@ final class AppEnvironment {
         AuthViewModel(
             authRepository: authRepository,
             loginUseCase: LoginUseCase(authRepository: authRepository),
-            session: session
+            session: session,
+            isUsingMockAuth: isUsingMockAuth
         )
     }
 

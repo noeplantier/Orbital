@@ -102,7 +102,9 @@ struct AuthView: View {
 
     private var demoHint: some View {
         VStack(spacing: 2) {
-            Text("Demo account: demo@metacity.app / password123")
+            if viewModel.isUsingMockAuth {
+                Text("Demo account: demo@metacity.app / password123")
+            }
             Text("\"Continue with Google\" signs in as a mocked identity — no real OAuth wired up yet")
         }
         .font(.metacityCaption)

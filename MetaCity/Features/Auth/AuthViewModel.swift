@@ -30,14 +30,17 @@ final class AuthViewModel: ObservableObject {
     @Published var isGoogleSignInLoading = false
     @Published var presentedError: IdentifiableError?
 
+    let isUsingMockAuth: Bool
+
     private let authRepository: AuthRepository
     private let loginUseCase: LoginUseCase
     private let session: SessionStore
 
-    init(authRepository: AuthRepository, loginUseCase: LoginUseCase, session: SessionStore) {
+    init(authRepository: AuthRepository, loginUseCase: LoginUseCase, session: SessionStore, isUsingMockAuth: Bool = true) {
         self.authRepository = authRepository
         self.loginUseCase = loginUseCase
         self.session = session
+        self.isUsingMockAuth = isUsingMockAuth
     }
 
     var canSubmit: Bool {
